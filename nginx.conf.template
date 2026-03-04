@@ -1,25 +1,22 @@
+# nginx.conf.template
 events { worker_connections 1024; }
-
 http {
-    # This is the "Bouncer" configuration
+    resolver [fd12::10] ipv6=off;
+
     server {
         listen 80;
-
-        # Basic Auth Settings
         auth_basic "LocalStack Protected Area";
         auth_basic_user_file /etc/nginx/.htpasswd;
 
         location / {
-            # Proxy to LocalStack's internal Railway domain
-            # Replace 'localstack-service' with your actual Railway service name
-            proxy_pass http://localstack-service.railway.internal:4566;
+            # Use the variable defined in Railway here
+            set $upstream ${ORIGIN};
+            proxy_pass $upstream;
             
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
-
-            # Important for S3: increase upload size limit
             client_max_body_size 0; 
         }
     }
