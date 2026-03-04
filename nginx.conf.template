@@ -1,5 +1,4 @@
 # Railway internal DNS resolver
-resolver 127.0.0.11 valid=30s ipv6=off;
 
 server {
     listen 80;
