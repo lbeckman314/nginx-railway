@@ -1,23 +1,26 @@
-# nginx.conf.template
-events { worker_connections 1024; }
-http {
-    resolver [fd12::10] ipv6=off;
+# Remove 'events' and 'http' blocks. 
+# The main nginx.conf handles those for you.
 
-    server {
-        listen 80;
-        auth_basic "LocalStack Protected Area";
-        auth_basic_user_file /etc/nginx/.htpasswd;
+resolver [fd12::10] ipv6=off;
 
-        location / {
-            # Use the variable defined in Railway here
-            set $upstream ${ORIGIN};
-            proxy_pass $upstream;
-            
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            client_max_body_size 0; 
-        }
+server {
+    listen 80;
+
+    # Basic Auth Settings
+    auth_basic "LocalStack Protected Area";
+    auth_basic_user_file /etc/nginx/.htpasswd;
+
+    location / {
+        # Use the Railway variable here
+        set $upstream ${ORIGIN};
+        proxy_pass $upstream;
+        
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+
+        # Important for S3: increase upload size limit
+        client_max_body_size 0; 
     }
 }
