@@ -1,17 +1,13 @@
-# Remove 'events' and 'http' blocks. 
-# The main nginx.conf handles those for you.
-
-resolver [fd12::10] ipv6=off;
+# Railway internal DNS resolver
+resolver 127.0.0.11 valid=30s ipv6=off;
 
 server {
     listen 80;
-
-    # Basic Auth Settings
     auth_basic "LocalStack Protected Area";
     auth_basic_user_file /etc/nginx/.htpasswd;
 
     location / {
-        # Use the Railway variable here
+        # Using a variable forces Nginx to use the resolver above
         set $upstream ${ORIGIN};
         proxy_pass $upstream;
         
@@ -19,8 +15,6 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
-        # Important for S3: increase upload size limit
         client_max_body_size 0; 
     }
 }
